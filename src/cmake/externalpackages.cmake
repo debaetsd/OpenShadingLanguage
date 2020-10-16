@@ -115,19 +115,29 @@ checked_find_package (pugixml REQUIRED)
 
 
 # LLVM library setup
-checked_find_package (LLVM 7.0 REQUIRED
-                      PRINT LLVM_SYSTEM_LIBRARIES CLANG_LIBRARIES)
-# ensure include directory is added (in case of non-standard locations
-include_directories (BEFORE SYSTEM "${LLVM_INCLUDES}")
-link_directories ("${LLVM_LIB_DIR}")
+
+checked_find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+link_directories(${LLVM_LIBRARY_DIRS})
+set(LLVM_LIBRARIES ${LLVM_AVAILABLE_LIBS}) # TODO we can trim this down to only the libs required		
+ 
 # Extract and concatenate major & minor, remove wayward patches,
 # dots, and "svn" or other suffixes.
-string (REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\1\\2" OSL_LLVM_VERSION ${LLVM_VERSION})
+string (REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\1\\2" OSL_LLVM_VERSION ${LLVM_PACKAGE_VERSION})
 add_definitions (-DOSL_LLVM_VERSION=${OSL_LLVM_VERSION})
-add_definitions (-DOSL_LLVM_FULL_VERSION="${LLVM_VERSION}")
+add_definitions (-DOSL_LLVM_FULL_VERSION="${LLVM_PACKAGE_VERSION}")
 if (LLVM_NAMESPACE)
-    add_definitions ("-DLLVM_NAMESPACE=${LLVM_NAMESPACE}")
+	add_definitions ("-DLLVM_NAMESPACE=${LLVM_NAMESPACE}")
 endif ()
+
+checked_find_package(Clang REQUIRED)
+include_directories(BEFORE SYSTEM ${CLANG_INCLUDE_DIRS}) 
+set(CLANG_LIBRARIES clangCrossTU) # TODO figure out what exactly we need (this seems to work though it might be overkill)	
+
 if (LLVM_VERSION VERSION_GREATER_EQUAL 10.0.0 AND
     CMAKE_CXX_STANDARD VERSION_LESS 14)
     message (FATAL_ERROR

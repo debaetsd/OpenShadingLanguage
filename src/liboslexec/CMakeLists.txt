@@ -203,13 +203,17 @@ else ()
                                  PROPERTIES COMPILE_FLAGS "-fno-rtti")
 endif()
 
+# link with (system) library to prevent missing symbols inside clangDriver.lib
+if (MSVC)
+    target_link_libraries (${local_lib} PRIVATE "Version.lib")
+endif()
 
 target_link_libraries (${local_lib}
     PUBLIC
         OpenImageIO::OpenImageIO
         ${ILMBASE_LIBRARIES}
     PRIVATE
-        pugixml
+        pugixml::pugixml
         ${ZLIB_LIBRARIES}
         ${Boost_LIBRARIES} ${CMAKE_DL_LIBS}
         ${CLANG_LIBRARIES}

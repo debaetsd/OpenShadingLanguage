@@ -101,15 +101,15 @@ checked_find_package (pugixml 1.8 REQUIRED)
 
 # LLVM library setup
 
-checked_find_package(LLVM REQUIRED CONFIG)
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+checked_find_package(LLVM REQUIRED CONFIG 
+					 DEFINITIONS ${LLVM_DEFINITIONS})
 
 include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
 link_directories(${LLVM_LIBRARY_DIRS})
-set(LLVM_LIBRARIES ${LLVM_AVAILABLE_LIBS}) # TODO we can trim this down to only the libs required		
- 
+
+list (APPEND LLVM_LIBRARIES LLVMMCJIT LLVMPasses)
+list (APPEND LLVM_LIBRARIES LLVMX86CodeGen LLVMX86Disassembler LLVMX86AsmParser)
+
 # Extract and concatenate major & minor, remove wayward patches,
 # dots, and "svn" or other suffixes.
 string (REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\1\\2" OSL_LLVM_VERSION ${LLVM_PACKAGE_VERSION})

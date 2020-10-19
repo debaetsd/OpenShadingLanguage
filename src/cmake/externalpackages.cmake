@@ -101,11 +101,16 @@ checked_find_package (pugixml 1.8 REQUIRED)
 
 # LLVM library setup
 
-checked_find_package(LLVM REQUIRED CONFIG 
-					 DEFINITIONS ${LLVM_DEFINITIONS})
+checked_find_package(LLVM REQUIRED CONFIG)
+# manual version check because "LLVM is API-compatible only with matching major.minor versions" aka it requires VERSION_EQUAL
+if ( ${LLVM_PACKAGE_VERSION} VERSION_LESS 7 )
+	message(FATAL_ERROR "LLVM 7.0+ is required but ${LLVM_PACKAGE_VERSION} was found")
+endif()
 
 include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
 link_directories(${LLVM_LIBRARY_DIRS})
+
 
 list (APPEND LLVM_LIBRARIES LLVMMCJIT LLVMPasses)
 list (APPEND LLVM_LIBRARIES LLVMX86CodeGen LLVMX86Disassembler LLVMX86AsmParser)
@@ -118,6 +123,10 @@ add_definitions (-DOSL_LLVM_FULL_VERSION="${LLVM_PACKAGE_VERSION}")
 if (LLVM_NAMESPACE)
 	add_definitions ("-DLLVM_NAMESPACE=${LLVM_NAMESPACE}")
 endif ()
+if (NOT LLVM_DIRECTORY)
+	set(LLVM_DIRECTORY ${LLVM_INSTALL_PREFIX})
+endif()
+set(LLVM_TARGETS ${LLVM_TARGETS_TO_BUILD})
 
 checked_find_package(Clang REQUIRED)
 include_directories(BEFORE SYSTEM ${CLANG_INCLUDE_DIRS}) 

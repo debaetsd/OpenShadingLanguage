@@ -110,7 +110,11 @@ endif()
 include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 link_directories(${LLVM_LIBRARY_DIRS})
-set(LLVM_LIBRARIES ${LLVM_AVAILABLE_LIBS})
+
+#set(LLVM_LIBRARIES ${LLVM_AVAILABLE_LIBS})
+llvm_map_components_to_libnames(LLVM_LIBRARIES 
+	MCJIT Passes 
+	AllTargetsCodeGens AllTargetsDisassemblers AllTargetsAsmParsers)
 
 # Extract and concatenate major & minor, remove wayward patches,
 # dots, and "svn" or other suffixes.

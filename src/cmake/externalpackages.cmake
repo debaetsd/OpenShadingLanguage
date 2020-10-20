@@ -114,7 +114,7 @@ link_directories(${LLVM_LIBRARY_DIRS})
 #set(LLVM_LIBRARIES ${LLVM_AVAILABLE_LIBS})
 llvm_map_components_to_libnames(LLVM_LIBRARIES 
 	MCJIT Passes 
-	AllTargetsCodeGens AllTargetsDisassemblers AllTargetsAsmParsers)
+	${LLVM_TARGETS_TO_BUILD})
 
 # Extract and concatenate major & minor, remove wayward patches,
 # dots, and "svn" or other suffixes.

@@ -469,8 +469,8 @@ if (CLANG_FORMAT_EXE)
     # message (STATUS "clang-format file list: ${FILES_TO_FORMAT}")
     file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/.clang-format
           DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-   # add_custom_target (clang-format
-   #     COMMAND "${CLANG_FORMAT_EXE}" -i -style=file ${FILES_TO_FORMAT} )
+    add_custom_target (osl-clang-format
+        COMMAND "${CLANG_FORMAT_EXE}" -i -style=file ${FILES_TO_FORMAT} )
 else ()
     message (STATUS "clang-format not found.")
 endif ()

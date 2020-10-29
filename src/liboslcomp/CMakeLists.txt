@@ -28,8 +28,8 @@ target_link_libraries (${local_lib}
         ${ILMBASE_LIBRARIES}
     PRIVATE
         ${Boost_LIBRARIES} ${CMAKE_DL_LIBS}
-        ${CLANG_LIBRARIES} ${LLVM_LIBRARIES} ${LLVM_LDFLAGS}
-        ${LLVM_SYSTEM_LIBRARIES})
+        clangCrossTU
+        )
 
 # link with (system) library to prevent missing symbols inside clangDriver.lib
 if (MSVC)

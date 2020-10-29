@@ -208,6 +208,10 @@ if (MSVC)
     target_link_libraries (${local_lib} PRIVATE "Version.lib")
 endif()
 
+# TODO(ddebaets) AllTargetsCodeGens is not defined on LLVM <=7 
+# either use explicit target names or something like  ${LLVM_TARGETS_TO_BUILD}
+llvm_map_components_to_libnames(LLVM_LIBRARIES_local AllTargetsCodeGens AllTargetsDisassemblers AllTargetsAsmParsers)
+
 target_link_libraries (${local_lib}
     PUBLIC
         OpenImageIO::OpenImageIO
@@ -216,8 +220,9 @@ target_link_libraries (${local_lib}
         pugixml::pugixml
         ${ZLIB_LIBRARIES}
         ${Boost_LIBRARIES} ${CMAKE_DL_LIBS}
-        ${CLANG_LIBRARIES}
-        ${LLVM_LIBRARIES} ${LLVM_LDFLAGS} ${LLVM_SYSTEM_LIBRARIES}
+        clangCrossTU
+        ${LLVM_LIBRARIES_local}
+        LLVMMCJIT LLVMPasses
     )
 
 set_target_properties (${local_lib}

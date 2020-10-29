@@ -128,14 +128,6 @@ if ( ${LLVM_PACKAGE_VERSION} VERSION_LESS 7 )
 	message(FATAL_ERROR "LLVM 7.0+ is required but ${LLVM_PACKAGE_VERSION} was found")
 endif()
 
-include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
-link_directories(${LLVM_LIBRARY_DIRS})
-
-llvm_map_components_to_libnames(LLVM_LIBRARIES 
-	MCJIT Passes 
-	${LLVM_TARGETS_TO_BUILD})   #this will link with all LLVM targets (x86, nvptx, ...) specific libraries (codegen, dissasembly,...)
-
 # Extract and concatenate major & minor, remove wayward patches,
 # dots, and "svn" or other suffixes.
 string (REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\1\\2" OSL_LLVM_VERSION ${LLVM_PACKAGE_VERSION})
@@ -147,11 +139,8 @@ endif ()
 if (NOT LLVM_DIRECTORY)
 	set(LLVM_DIRECTORY ${LLVM_INSTALL_PREFIX})
 endif()
-set(LLVM_TARGETS ${LLVM_TARGETS_TO_BUILD})
 
 checked_find_package(Clang REQUIRED)
-include_directories(BEFORE SYSTEM ${CLANG_INCLUDE_DIRS}) 
-set(CLANG_LIBRARIES clangCrossTU) # TODO figure out what exactly we need (this seems to work though it might be overkill)	
 
 if (LLVM_VERSION VERSION_GREATER_EQUAL 10.0.0 AND
     CMAKE_CXX_STANDARD VERSION_LESS 14)
@@ -212,7 +201,7 @@ if (USE_CUDA OR USE_OPTIX)
     set (CUDA_INCLUDES ${CUDA_TOOLKIT_ROOT_DIR}/include)
     include_directories (BEFORE "${CUDA_INCLUDES}")
 
-    STRING (FIND ${LLVM_TARGETS} "NVPTX" nvptx_index)
+    STRING (FIND ${LLVM_TARGETS_TO_BUILD} "NVPTX" nvptx_index)
     if (NOT ${nvptx_index} GREATER -1)
         message (FATAL_ERROR "NVPTX target is not available in the provided LLVM build")
     endif()

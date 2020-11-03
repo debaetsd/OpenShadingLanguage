@@ -847,6 +847,9 @@ OSLToyMainWindow::recompile_shaders()
             OSLCompiler oslcomp(&errhandler);
             std::string osooutput;
             std::vector<std::string> options;
+
+            options.push_back("-I<snip>/libraries/stdlib/osl");
+
             ok = oslcomp.compile_buffer(source, osooutput, options, "",
                                         briefname);
             set_error_message(tab,
@@ -1124,7 +1127,7 @@ OSLToyMainWindow::set_param_diddle(ParamRec* param, int diddle)
     build_shader_group();
 }
 
-
+static bool isRebuilding = false;
 
 void
 OSLToyMainWindow::set_param_instance_value(ParamRec* param)
@@ -1159,7 +1162,7 @@ OSLToyMainWindow::set_param_instance_value(ParamRec* param)
                                       param->layername, param->name,
                                       param->type, val->data());
         rerender_needed();
-    } else {
+    } else  if (isRebuilding == false){
         build_shader_group();
     }
 }
@@ -1174,6 +1177,8 @@ OSLToyMainWindow::rebuild_param_area()
     if (!group)
         return;
 
+
+    isRebuilding = true;
     clear_param_area();
     int paramrow = 0;
     int nlayers  = 0;
@@ -1193,6 +1198,7 @@ OSLToyMainWindow::rebuild_param_area()
     }
 
     paramScroll->setWidget(paramWidget);
+    isRebuilding = false;
 }
 
 

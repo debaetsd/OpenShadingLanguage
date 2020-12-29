@@ -13,6 +13,7 @@ set (lib_src
           opspline.cpp opstring.cpp optexture.cpp
           oslexec.cpp
           pointcloud.cpp rendservices.cpp
+          batched_rendservices.cpp
           constfold.cpp runtimeoptimize.cpp typespec.cpp
           lpexp.cpp lpeparse.cpp automata.cpp accum.cpp
           opclosure.cpp
@@ -98,6 +99,9 @@ macro ( LLVM_COMPILE llvm_src srclist )
     #    endif ()
     #endif ()
 
+    list (TRANSFORM IMATH_INCLUDES PREPEND -I
+          OUTPUT_VARIABLE ALL_IMATH_INCLUDES)
+
     # Command to turn the .cpp file into LLVM assembly language .s, into
     # LLVM bitcode .bc, then back into a C++ file with the bc embedded!
     add_custom_command ( OUTPUT ${llvm_bc_cpp}
@@ -107,10 +111,13 @@ macro ( LLVM_COMPILE llvm_src srclist )
           "-I${CMAKE_SOURCE_DIR}/src/include"
           "-I${CMAKE_BINARY_DIR}/include"
           "-I${OpenImageIO_INCLUDES}"
-          "-I${ILMBASE_INCLUDES}"
+          ${ALL_IMATH_INCLUDES}
           "-isystem ${Boost_INCLUDE_DIRS}"
           -DOSL_COMPILING_TO_BITCODE=1
           -Wno-deprecated-register
+          # the following 2 warnings can be restored when all 3rd parties have fixed their export macros
+          # (dllimport attribute is not supported when compiling for Cuda and triggers a ton of warnings)
+          -Wno-ignored-attributes -Wno-unknown-attributes
           -O3 -fno-math-errno -S -emit-llvm -o ${llvm_asm} ${llvm_src}
       COMMAND "${LLVM_DIRECTORY}/bin/llvm-as" -f -o ${llvm_bc} ${llvm_asm}
       COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/serialize-bc.py" ${llvm_bc} ${llvm_bc_cpp} "osl_llvm_compiled_ops"
@@ -185,6 +192,7 @@ target_include_directories (${local_lib}
 target_compile_definitions (${local_lib}
     PRIVATE
         OSL_EXPORTS
+        CUDA_TARGET_ARCH="${CUDA_TARGET_ARCH}"
         OSL_CUDA_VERSION="${CUDA_VERSION}"
         OSL_OPTIX_VERSION="${OPTIX_VERSION}"
     )
@@ -211,6 +219,15 @@ endif()
 target_link_libraries (${local_lib}
     PUBLIC
         OpenImageIO::OpenImageIO
+        # For OpenEXR/Imath 3.x:
+        $<$<TARGET_EXISTS:Imath::Imath>:Imath::Imath>
+        $<$<TARGET_EXISTS:Imath::Half>:Imath::Half>
+        # For OpenEXR >= 2.4/2.5 with reliable exported targets
+        $<$<TARGET_EXISTS:IlmBase::Imath>:IlmBase::Imath>
+        $<$<TARGET_EXISTS:IlmBase::Half>:IlmBase::Half>
+        $<$<TARGET_EXISTS:IlmBase::IlmThread>:IlmBase::IlmThread>
+        $<$<TARGET_EXISTS:IlmBase::Iex>:IlmBase::Iex>
+        # For OpenEXR <= 2.3:
         ${ILMBASE_LIBRARIES}
     PRIVATE
         pugixml::pugixml

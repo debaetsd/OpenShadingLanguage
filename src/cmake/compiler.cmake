@@ -176,7 +176,7 @@ endif ()
 
 if (MSVC)
     # Microsoft specific options
-    add_compile_options (/W1)
+    string (REGEX REPLACE "/W[1-4]" "/W1" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions (-D_CRT_SECURE_NO_WARNINGS)
     add_definitions (-D_CRT_NONSTDC_NO_WARNINGS)
@@ -419,6 +419,7 @@ set (CLANG_FORMAT_INCLUDES # "src/*.h" "src/*.cpp"
                             "src/include/*.h"
                             "src/liboslcomp/*.cpp"
                             "src/liboslcomp/*.h"
+                            "src/liboslexec/batched_rendservices.cpp"
                             "src/liboslquery/*.cpp"
                             "src/liboslquery/*.h"
                             "src/oslinfo/*.cpp"
